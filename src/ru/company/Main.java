@@ -21,7 +21,6 @@ public class Main {
     NumberConversionSoapType port = service.getNumberConversionSoap();
 
     // вызываем метод веб-сервиса
-    Client cl = new Client(999);
-    long number = cl.transfer;
+    long number = 1
     String res = port.numberToWords(BigInteger.valueOf(number));
         System.out.println(res);*/

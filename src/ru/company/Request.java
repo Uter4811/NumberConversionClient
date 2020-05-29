@@ -1,15 +1,19 @@
 package ru.company;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import com.dataaccess.webservicesserver.NumberConversion;
 import com.dataaccess.webservicesserver.NumberConversionSoapType;
 import  com.dataaccess.webservicesserver.*;
 import java.math.BigInteger;
-
-
-
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.nio.charset.Charset;
 
 
 //private String bodyPath;// адрес где лежит хмл
@@ -36,15 +40,45 @@ public class Request {
     }
     public void action() {
 
-        NumberConversion service = new NumberConversion();
-        NumberConversionSoapType port = service.getNumberConversionSoap();
-        int z = 1 + (int) (Math.random()*300);
+        String responseString = "";
+        String outputString = "";
+        HttpURLConnection httpConn = null;
+        try {
+            httpConn = (HttpURLConnection) new URL(endPoint).openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] buffer = body.getBytes();
+        httpConn.setRequestProperty("Content-Length", String.valueOf(buffer.length));
+        httpConn.setRequestProperty("Content-Type", "application/soap+xml; charset=utf-8");
+        try {
+            httpConn.setRequestMethod("POST");
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        }
+        httpConn.setDoOutput(true);
+        httpConn.setDoInput(true);
+        OutputStream out = null;
+        try {
+            out = httpConn.getOutputStream();
+            out.write(buffer);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        Client cl = new Client(z);
-        long number = cl.transfer;
-        String res = port.numberToWords(BigInteger.valueOf(number));
-        System.out.println(res);
-
+        InputStreamReader isr = null;
+        try {
+            isr = new InputStreamReader(httpConn.getInputStream(), Charset.forName("UTF-8"));
+            BufferedReader in = new BufferedReader(isr);
+            while ((responseString = in.readLine()) != null) {
+                outputString = outputString + responseString;
+            }
+            System.out.println(outputString);
+            isr.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
 
